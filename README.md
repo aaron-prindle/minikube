@@ -1,7 +1,7 @@
 # Minikube
 
 [![Build Status](https://travis-ci.org/aaron-prindle/minikube.svg?branch=master)](https://travis-ci.org/aaron-prindle/minikube)
-[![Coverage Status](https://coveralls.io/repos/github/aaron-prindle/minikube/badge.svg?branch=master)](https://coveralls.io/github/aaron-prindle/minikube?branch=master)
++[![Coverage Status](http://codecov.io/github/aaron-prindle/minikube/coverage.svg?branch=master)](http://codecov.io/github/aaron-prindle/minikube?branch=master)
 
 ## What is Minikube?
 

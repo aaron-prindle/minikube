@@ -29,13 +29,13 @@ fi
 # Run "go test" on packages that have test files.  Also create coverage profile
 echo "Running go tests..."
 cd ${GOPATH}/src/${REPO_PATH}
-rm -f out/coverage.cov
-echo "mode: set" > out/coverage.cov
+rm -f out/coverage.txt
+echo "mode: count" > out/coverage.txt
 for pkg in $(go list -f '{{ if .TestGoFiles }} {{.ImportPath}} {{end}}' ./...); do
-    go test -v $pkg --coverprofile=out/coverage_tmp.cov || ERROR="Error testing $pkg"
-    tail -n +2 out/coverage_tmp.cov >> out/coverage.cov || die "Unable to append coverage for $pkg"
+    go test -v $pkg -covermode=count -coverprofile=out/coverage_tmp.txt || ERROR="Error testing $pkg"
+    tail -n +2 out/coverage_tmp.txt >> out/coverage.txt || die "Unable to append coverage for $pkg"
 done
-rm out/coverage_tmp.cov
+rm out/coverage_tmp.txt
 
 # Ignore these paths in the following tests.
 ignore="vendor\|\_gopath\|assets.go"
