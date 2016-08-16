@@ -1,15 +1,10 @@
 language: go
 go:
-- 1.6.3
+  - 1.6.3
 go_import_path: k8s.io/minikube
-before_install:
-- go get github.com/mattn/goveralls
-- go get golang.org/x/tools/cmd/cover
 install:
-- echo "Don't run anything."
+  - echo "Don't run anything."
 script:
-- make test
-- $HOME/gopath/bin/goveralls -coverprofile=out/coverage.cov -service=travis-ci -repotoken $COVERALLS_TOKEN
-env:
-  global:
-  - secure: Hnv5lTn3IXZoMwdgJfczghjVeeOYZq4xWH3WHMIl2JHWsfWKx6AFFPmfDkRLoWXgHzoPQjnSWyhJWlO4gzSumA42KQhiQSoghU/uF06f8pp8lpJGibmVZ5V9u7GicGgabsNHnm8CXr8XUbCOs4MLupz8kC++RzHomIQJHxf4QZ3LJR5m06veS7Xv277cTyuuNFL3pebSRIxkYXw8F1E068JYj3f0c821xQ11l03ZaW7coL/WVqU77loixku7/FoTnk1LHF36FHREbC7BIrq6bFqqYcLigHNYcxLo+830T1hUcv+rRTHWgJtxF3fzw5kIQyH2YCjZ2dA0uzVfhe/5Y7ZEHTYCaClKxYGB2tjOHuCQOIMMyCFslcd2O2sx0AOB7fL3M9JqOVDqnjvKF28xn7bRlvy9KDkETzmx8mkT1YoanZjyV/H2byYqrB7ue7iNi3DsHLutqdf+O/HSbjqIpFq+0W4XqPX3G1cuGmfVoAMTMkHcbv6v69SFlazdnuXd97jORv+nyk7Fph+joDahsKqZ2a5+QD3XGi6DjhS6mBQJA3xGdpoH3AiFYrP+D1dWwkFFrj+nle0Pn8xHty1A2eMwrzww1R9sBjmJBXYcVG4Uo2fTFnVfKKvRXI4aTNkdn41tjoD0R0NRYpAP2j2BvojUHPcifRxOEUNHdU64Iy8=
+  - make test
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
