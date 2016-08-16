@@ -1,6 +1,7 @@
 # Minikube
 
-[![Build Status](https://travis-ci.org/kubernetes/minikube.svg?branch=master)](https://travis-ci.org/kubernetes/minikube)
+[![Build Status](https://travis-ci.org/aaron-prindle/minikube.svg?branch=master)](https://travis-ci.org/aaron-prindle/minikube)
+[![Coverage Status](https://coveralls.io/repos/github/aaron-prindle/minikube/badge.svg?branch=master)](https://coveralls.io/github/aaron-prindle/minikube?branch=master)
 
 ## What is Minikube?
 
