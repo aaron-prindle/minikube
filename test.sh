@@ -25,11 +25,17 @@ else
 	PYTHON="docker run --rm -it -v $(pwd):/minikube -w /minikube python python"
 fi
 
-# Run "go test" on packages that have test files.
+
+# Run "go test" on packages that have test files.  Also create coverage profile
 echo "Running go tests..."
 cd ${GOPATH}/src/${REPO_PATH}
-TESTS=$(go list -f '{{ if .TestGoFiles }} {{.ImportPath}} {{end}}' ./...)
-go test -v ${TESTS}
+rm -f out/coverage.cov
+echo "mode: set" > out/coverage.cov
+for pkg in $(go list -f '{{ if .TestGoFiles }} {{.ImportPath}} {{end}}' ./...); do
+    go test -v $pkg --coverprofile=out/coverage_tmp.cov || ERROR="Error testing $pkg"
+    tail -n +2 out/coverage_tmp.cov >> out/coverage.cov || die "Unable to append coverage for $pkg"
+done
+rm out/coverage_tmp.cov
 
 # Ignore these paths in the following tests.
 ignore="vendor\|\_gopath\|assets.go"
