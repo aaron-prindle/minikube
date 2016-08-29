@@ -22,6 +22,7 @@ import (
 	"github.com/docker/machine/libmachine/drivers"
 	"github.com/docker/machine/libmachine/mcnflag"
 	"github.com/docker/machine/libmachine/state"
+	"github.com/pkg/errors"
 )
 
 // MockDriver is a struct used to mock out libmachine.Driver
@@ -55,7 +56,7 @@ func (driver *MockDriver) GetSSHPort() (int, error) {
 // GetSSHHostname returns the hostname for SSH
 func (driver *MockDriver) GetSSHHostname() (string, error) {
 	if driver.HostError {
-		return "", fmt.Errorf("Error getting host!")
+		return "", errors.New("Error getting host!")
 	}
 	return "localhost", nil
 }
@@ -84,7 +85,7 @@ func (driver *MockDriver) Kill() error {
 // Remove removes the machine
 func (driver *MockDriver) Remove() error {
 	if driver.RemoveError {
-		return fmt.Errorf("Error deleting machine.")
+		return errors.New("Error deleting machine.")
 	}
 	return nil
 }

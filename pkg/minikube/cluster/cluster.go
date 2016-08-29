@@ -41,6 +41,7 @@ import (
 	"github.com/docker/machine/libmachine/host"
 	"github.com/docker/machine/libmachine/state"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	kubeApi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
@@ -66,7 +67,7 @@ func init() {
 func StartHost(api libmachine.API, config MachineConfig) (*host.Host, error) {
 	exists, err := api.Exists(constants.MachineName)
 	if err != nil {
-		return nil, fmt.Errorf("Error checking if host exists: %s", err)
+		return nil, errors.Wrap(err, "Error checking if host exists: %s")
 	}
 	if !exists {
 		return createHost(api, config)
@@ -75,27 +76,27 @@ func StartHost(api libmachine.API, config MachineConfig) (*host.Host, error) {
 	glog.Infoln("Machine exists!")
 	h, err := api.Load(constants.MachineName)
 	if err != nil {
-		return nil, fmt.Errorf(
-			"Error loading existing host: %s. Please try running [minikube delete], then run [minikube start] again.", err)
+		return nil, errors.New(fmt.Sprintf(
+			"Error loading existing host: %s. Please try running [minikube delete], then run [minikube start] again.", err))
 	}
 
 	s, err := h.Driver.GetState()
 	glog.Infoln("Machine state: ", s)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting state for host: %s", err)
+		return nil, errors.Wrap(err, "Error getting state for host: %s")
 	}
 
 	if s != state.Running {
 		if err := h.Driver.Start(); err != nil {
-			return nil, fmt.Errorf("Error starting stopped host: %s", err)
+			return nil, errors.Wrap(err, "Error starting stopped host: %s")
 		}
 		if err := api.Save(h); err != nil {
-			return nil, fmt.Errorf("Error saving started host: %s", err)
+			return nil, errors.Wrap(err, "Error saving started host: %s")
 		}
 	}
 
 	if err := h.ConfigureAuth(); err != nil {
-		return nil, fmt.Errorf("Error configuring auth on host: %s", err)
+		return nil, errors.Wrap(err, "Error configuring auth on host: %s")
 	}
 	return h, nil
 }
@@ -479,12 +480,12 @@ func (m *MachineConfig) CacheMinikubeISOFromURL() error {
 	// Validate the ISO if it was the default URL, before writing it to disk.
 	if m.MinikubeISO == constants.DefaultIsoUrl {
 		if !isIsoChecksumValid(&isoData, constants.DefaultIsoShaUrl) {
-			return fmt.Errorf("Error validating ISO checksum.")
+			return errors.New("Error validating ISO checksum.")
 		}
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("Received %d response from %s while trying to download minikube.iso", response.StatusCode, m.MinikubeISO)
+		return errors.New(fmt.Sprintf("Received %d response from %s while trying to download minikube.iso", response.StatusCode, m.MinikubeISO))
 	}
 
 	out, err := os.Create(m.GetISOCacheFilepath())
@@ -570,7 +571,7 @@ func createHost(api libmachine.API, config MachineConfig) (*host.Host, error) {
 
 	h, err := api.NewHost(config.VMDriver, data)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating new host: %s", err)
+		return nil, errors.Wrap(err, "Error creating new host: %s")
 	}
 
 	h.HostOptions.AuthOptions.CertDir = constants.Minipath
@@ -580,11 +581,11 @@ func createHost(api libmachine.API, config MachineConfig) (*host.Host, error) {
 	if err := api.Create(h); err != nil {
 		// Wait for all the logs to reach the client
 		time.Sleep(2 * time.Second)
-		return nil, fmt.Errorf("Error creating. %s", err)
+		return nil, errors.Wrap(err, "Error creating. %s")
 	}
 
 	if err := api.Save(h); err != nil {
-		return nil, fmt.Errorf("Error attempting to save store: %s", err)
+		return nil, errors.Wrap(err, "Error attempting to save store: %s")
 	}
 	return h, nil
 }
@@ -631,7 +632,7 @@ func checkIfApiExistsAndLoad(api libmachine.API) (*host.Host, error) {
 		return nil, err
 	}
 	if !exists {
-		return nil, fmt.Errorf("Machine does not exist for api.Exists(%s)", constants.MachineName)
+		return nil, errors.New(fmt.Sprintf("Machine does not exist for api.Exists(%s)", constants.MachineName))
 	}
 
 	host, err := api.Load(constants.MachineName)
@@ -653,7 +654,7 @@ func CreateSSHShell(api libmachine.API, args []string) error {
 	}
 
 	if currentState != state.Running {
-		return fmt.Errorf("Error: Cannot run ssh command: Host %q is not running", constants.MachineName)
+		return errors.New(fmt.Sprintf("Error: Cannot run ssh command: Host %q is not running", constants.MachineName))
 	}
 
 	client, err := host.CreateSSHClient()
@@ -701,14 +702,14 @@ func getServicePort(namespace, service string) (int, error) {
 func getServicePortFromServiceGetter(services serviceGetter, service string) (int, error) {
 	svc, err := services.Get(service)
 	if err != nil {
-		return 0, fmt.Errorf("Error getting %s service: %s", service, err)
+		return 0, errors.Wrap(err, fmt.Sprintf("Error getting %s service: %s", service))
 	}
 	nodePort := 0
 	if len(svc.Spec.Ports) > 0 {
 		nodePort = int(svc.Spec.Ports[0].NodePort)
 	}
 	if nodePort == 0 {
-		return 0, fmt.Errorf("Service %s does not have a node port. To have one assigned automatically, the service type must be NodePort or LoadBalancer, but this service is of type %s.", service, svc.Spec.Type)
+		return 0, errors.New(fmt.Sprintf("Service %s does not have a node port. To have one assigned automatically, the service type must be NodePort or LoadBalancer, but this service is of type %s.", service, svc.Spec.Type))
 	}
 	return nodePort, nil
 }
@@ -719,7 +720,7 @@ func GetKubernetesClient() (*unversioned.Client, error) {
 	kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
 	config, err := kubeConfig.ClientConfig()
 	if err != nil {
-		return nil, fmt.Errorf("Error creating kubeConfig: %s", err)
+		return nil, errors.Wrap(err, "Error creating kubeConfig: %s")
 	}
 	client, err := unversioned.New(config)
 	if err != nil {

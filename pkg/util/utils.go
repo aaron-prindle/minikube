@@ -17,14 +17,20 @@ limitations under the License.
 package util
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/blang/semver"
+	"github.com/pkg/errors"
 	"k8s.io/minikube/pkg/minikube/constants"
 	"k8s.io/minikube/pkg/version"
 )
@@ -124,7 +130,58 @@ func (m MultiError) ToError() error {
 	for _, err := range m.Errors {
 		errStrings = append(errStrings, err.Error())
 	}
-	return fmt.Errorf(strings.Join(errStrings, "\n"))
+	return errors.New(strings.Join(errStrings, "\n"))
+}
+
+type ServiceContext struct {
+	Service string `json:"service"`
+	Version string `json:"version"`
+}
+
+type Message struct {
+	Message        string `json:"message"`
+	ServiceContext `json:"serviceContext"`
+}
+
+func ReportError(err error) error {
+	errMsg := fmt.Sprintf("%+v\n", err)
+	errArray := strings.Split(errMsg, "\n")
+	errOutput := []string{}
+	// len check?
+	errOutput = append(errOutput, errArray[0])
+	for i := 1; i < len(errArray)-1; i += 2 {
+		errOutput = append(errOutput, fmt.Sprintf("\tat %s (%s)", errArray[i],
+			filepath.Base(errArray[i+1])))
+	}
+	errMsg = strings.Join(errOutput, "\n") + "\n"
+	m := Message{errMsg, ServiceContext{"default", "v0.8.0"}}
+	b, err := json.Marshal(m)
+	fmt.Println(string(b))
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	url := "https://clouderrorreporting.googleapis.com/v1beta1/projects/aprindle-vm/events:report?key=AIzaSyAicHoDP7bg78e60f60L08MTeL96HPvvSg"
+	fmt.Println("URL:>", url)
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	req.Header.Set("X-Custom-Header", "myvalue")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	defer resp.Body.Close()
+
+	fmt.Println("response Status:", resp.Status)
+	fmt.Println("response Headers:", resp.Header)
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("response Body:", string(body))
+	return nil
 }
 
 func IsDirectory(path string) (bool, error) {

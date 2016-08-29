@@ -23,13 +23,15 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"fmt"
+	// "fmt"
 	"io/ioutil"
 	"math/big"
 	"net"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 func GenerateCACert(certPath, keyPath string) error {
@@ -66,7 +68,7 @@ func GenerateSignedCert(certPath, keyPath string, ips []net.IP, alternateDNS []s
 	}
 	decodedSignerCert, _ := pem.Decode(signerCertBytes)
 	if decodedSignerCert == nil {
-		return fmt.Errorf("Unable to decode certificate.")
+		return errors.New("Unable to decode certificate.")
 	}
 	signerCert, err := x509.ParseCertificate(decodedSignerCert.Bytes)
 	if err != nil {
@@ -78,7 +80,7 @@ func GenerateSignedCert(certPath, keyPath string, ips []net.IP, alternateDNS []s
 	}
 	decodedSignerKey, _ := pem.Decode(signerKeyBytes)
 	if decodedSignerKey == nil {
-		return fmt.Errorf("Unable to decode key.")
+		return errors.New("Unable to decode key.")
 	}
 	signerKey, err := x509.ParsePKCS1PrivateKey(decodedSignerKey.Bytes)
 	if err != nil {

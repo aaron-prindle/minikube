@@ -23,6 +23,7 @@ import (
 	"net/http"
 
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 const kubernetesVersionGCSURL = "https://storage.googleapis.com/minikube/k8s_releases.json"
@@ -66,7 +67,7 @@ func getK8sVersionsFromURL(url string) (k8sReleases, error) {
 		return k8sReleases{}, err
 	}
 	if len(k8sVersions) == 0 {
-		return k8sReleases{}, fmt.Errorf("There were no json k8s Releases at the url specified: %s", url)
+		return k8sReleases{}, errors.New(fmt.Sprintf("There were no json k8s Releases at the url specified: %s", url))
 	}
 	return k8sVersions, nil
 }

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/pkg/errors"
 	"k8s.io/minikube/pkg/minikube/constants"
 )
 
@@ -29,7 +30,7 @@ func errorGenerator(n int) func() error {
 	return func() (err error) {
 		if errors < n {
 			errors += 1
-			return fmt.Errorf("Error!")
+			return errors.New("Error!")
 		}
 		return nil
 	}
@@ -93,8 +94,8 @@ func TestGetLocalkubeDownloadURL(t *testing.T) {
 func TestMultiError(t *testing.T) {
 	m := MultiError{}
 
-	m.Collect(fmt.Errorf("Error 1"))
-	m.Collect(fmt.Errorf("Error 2"))
+	m.Collect(errors.New("Error 1"))
+	m.Collect(errors.New("Error 2"))
 
 	err := m.ToError()
 	expected := `Error 1

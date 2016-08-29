@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api/latest"
 	"k8s.io/kubernetes/pkg/runtime"
@@ -41,7 +42,7 @@ func ReadConfigOrNew(filename string) (*api.Config, error) {
 	// decode config, empty if no bytes
 	config, err := decode(data)
 	if err != nil {
-		return nil, fmt.Errorf("could not read config: %v", err)
+		return nil, errors.New(fmt.Sprintf("could not read config: %v", err))
 	}
 
 	// initialize nil maps
@@ -68,7 +69,7 @@ func WriteConfig(config *api.Config, filename string) error {
 	// encode config to YAML
 	data, err := runtime.Encode(latest.Codec, config)
 	if err != nil {
-		return fmt.Errorf("could not write to '%s': failed to encode config: %v", filename, err)
+		return errors.New(fmt.Sprintf("could not write to '%s': failed to encode config: %v", filename, err))
 	}
 
 	// create parent dir if doesn't exist

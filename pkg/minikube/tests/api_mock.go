@@ -25,6 +25,7 @@ import (
 	"github.com/docker/machine/libmachine/host"
 	"github.com/docker/machine/libmachine/mcnerror"
 	"github.com/docker/machine/libmachine/state"
+	"github.com/pkg/errors"
 )
 
 // MockAPI is a struct used to mock out libmachine.API
@@ -66,7 +67,7 @@ func (api *MockAPI) NewHost(driverName string, rawDriver []byte) (*host.Host, er
 // Create creates the actual host.
 func (api *MockAPI) Create(h *host.Host) error {
 	if api.CreateError {
-		return fmt.Errorf("Error creating host.")
+		return errors.New("Error creating host.")
 	}
 	return h.Driver.Create()
 }
@@ -97,7 +98,7 @@ func (api *MockAPI) Load(name string) (*host.Host, error) {
 // Remove a host.
 func (api *MockAPI) Remove(name string) error {
 	if api.RemoveError {
-		return fmt.Errorf("Error removing %s", name)
+		return errors.New("Error removing %s", name)
 	}
 
 	delete(api.Hosts, name)
