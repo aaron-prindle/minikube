@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/briandowns/spinner"
 	units "github.com/docker/go-units"
 	"github.com/docker/machine/libmachine"
 	"github.com/docker/machine/libmachine/host"
@@ -101,6 +102,10 @@ func runStart(cmd *cobra.Command, args []string) {
 	}
 
 	var host *host.Host
+	s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+	s.Prefix = "Starting VM:  "
+	s.FinalMSG = "Starting VM:  Complete\n"
+	s.Start()
 	start := func() (err error) {
 		host, err = cluster.StartHost(api, config)
 		if err != nil {
@@ -127,28 +132,49 @@ func runStart(cmd *cobra.Command, args []string) {
 		NetworkPlugin:     viper.GetString(networkPlugin),
 		ExtraOptions:      extraOptions,
 	}
+	s.Stop()
+
+	s.Prefix = "SSH-ing files into VM:  "
+	s.FinalMSG = "SSH-ing files into VM:  Complete\n"
+	s.Start()
 	if err := cluster.UpdateCluster(host, host.Driver, kubernetesConfig); err != nil {
 		glog.Errorln("Error updating cluster: ", err)
 		cmdUtil.MaybeReportErrorAndExit(err)
 	}
+	s.Stop()
 
+	s.Prefix = "Setting up certs:  "
+	s.FinalMSG = "Setting up certs:  Complete\n"
+	s.Start()
 	if err := cluster.SetupCerts(host.Driver); err != nil {
 		glog.Errorln("Error configuring authentication: ", err)
 		cmdUtil.MaybeReportErrorAndExit(err)
 	}
+	s.Stop()
 
+	s.Prefix = "Starting cluster components:  "
+	s.FinalMSG = "Starting cluster components:  Complete\n"
+	s.Start()
 	if err := cluster.StartCluster(host, kubernetesConfig); err != nil {
 		glog.Errorln("Error starting cluster: ", err)
 		cmdUtil.MaybeReportErrorAndExit(err)
 	}
+	s.Stop()
 
+	s.Prefix = "Connecting to cluster:  "
+	s.FinalMSG = "Connecting to cluster:  Complete\n"
+	s.Start()
 	kubeHost, err := host.Driver.GetURL()
 	if err != nil {
 		glog.Errorln("Error connecting to cluster: ", err)
 	}
 	kubeHost = strings.Replace(kubeHost, "tcp://", "https://", -1)
 	kubeHost = strings.Replace(kubeHost, ":2376", ":"+strconv.Itoa(constants.APIServerPort), -1)
+	s.Stop()
 
+	s.Prefix = "Setting up kubeconfig:  "
+	s.FinalMSG = "Setting up kubeconfig:  Complete\n"
+	s.Start()
 	// setup kubeconfig
 	keepContext := viper.GetBool(keepContext)
 	name := constants.MinikubeContext
@@ -159,6 +185,7 @@ func runStart(cmd *cobra.Command, args []string) {
 		glog.Errorln("Error setting up kubeconfig: ", err)
 		cmdUtil.MaybeReportErrorAndExit(err)
 	}
+	s.Stop()
 
 	if keepContext {
 		fmt.Printf("The local Kubernetes cluster has started. The kubectl context has not been altered, kubectl will require \"--context=%s\" to use the local Kubernetes cluster.\n", name)

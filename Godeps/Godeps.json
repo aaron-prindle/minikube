@@ -1,7 +1,7 @@
 {
 	"ImportPath": "k8s.io/minikube",
 	"GoVersion": "go1.7",
-	"GodepVersion": "v77",
+	"GodepVersion": "v75",
 	"Packages": [
 		"./..."
 	],
@@ -260,6 +260,10 @@
 			"ImportPath": "github.com/boltdb/bolt",
 			"Comment": "v1.2.1",
 			"Rev": "dfb21201d9270c1082d5fb0f07f500311ff72f18"
+		},
+		{
+			"ImportPath": "github.com/briandowns/spinner",
+			"Rev": "2c70630b7d7509ebda5365704ee6bb25e69b64ec"
 		},
 		{
 			"ImportPath": "github.com/cloudflare/cfssl/auth",
@@ -1014,6 +1018,11 @@
 			"Rev": "d6023ce2651d8eafb5c75bb0c7167536102ec9f5"
 		},
 		{
+			"ImportPath": "github.com/fatih/color",
+			"Comment": "v1.2-4-g42c364b",
+			"Rev": "42c364ba490082e4815b5222728711b3440603eb"
+		},
+		{
 			"ImportPath": "github.com/fsnotify/fsnotify",
 			"Comment": "v1.3.1-1-gf12c623",
 			"Rev": "f12c6236fe7b5cf6bcf30e5935d08cb079d78334"
@@ -1459,6 +1468,15 @@
 		{
 			"ImportPath": "github.com/mailru/easyjson/jwriter",
 			"Rev": "d5b7844b561a7bc640052f1b935f7b800330d7e0"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-colorable",
+			"Comment": "v0.0.6-9-gd228849",
+			"Rev": "d228849504861217f796da67fae4f6e347643f15"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-isatty",
+			"Rev": "30a891c33c7cde7b02a981314b4228ec99380cca"
 		},
 		{
 			"ImportPath": "github.com/mattn/go-runewidth",
@@ -2130,6 +2148,10 @@
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/windows",
 			"Rev": "8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9"
 		},
 		{
