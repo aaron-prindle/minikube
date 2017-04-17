@@ -73,6 +73,8 @@ func MakeMiniPath(fileName ...string) string {
 	return filepath.Join(args...)
 }
 
+var MountProcessFileName = ".mount-process"
+
 // Only pass along these flags to localkube.
 var LogFlags = [...]string{
 	"v",
@@ -127,4 +129,5 @@ const (
 const (
 	DefaultUfsPort     = "5640"
 	DefaultUfsDebugLvl = 0
+	DefaultNoMount     = false
 )

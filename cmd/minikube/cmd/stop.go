@@ -19,7 +19,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	cmdUtil "k8s.io/minikube/cmd/util"
 	"k8s.io/minikube/pkg/minikube/cluster"
@@ -46,6 +48,12 @@ itself, leaving all files intact. The cluster can be started again with the "sta
 			cmdUtil.MaybeReportErrorAndExit(err)
 		}
 		fmt.Println("Machine stopped.")
+
+		mountProc, err := cmdUtil.ReadProcessFromFile(filepath.Join(constants.GetMinipath(), constants.MountProcessFileName))
+		if err != nil {
+			glog.Errorf("Error reading mount process from file: ", err)
+		}
+		mountProc.Kill()
 	},
 }
 

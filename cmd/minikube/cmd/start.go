@@ -19,6 +19,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -54,6 +55,7 @@ const (
 	hypervVirtualSwitch   = "hyperv-virtual-switch"
 	kvmNetwork            = "kvm-network"
 	keepContext           = "keep-context"
+	noMount               = "no-mount"
 	featureGates          = "feature-gates"
 	apiServerName         = "apiserver-name"
 	dnsDomain             = "dns-domain"
@@ -194,8 +196,26 @@ func runStart(cmd *cobra.Command, args []string) {
 		cmdUtil.MaybeReportErrorAndExit(err)
 	}
 
+	fmt.Printf("Setting up hostmount on %s:%s...\n", constants.DefaultMountDir,
+		constants.DefaultMountEndpoint)
+	// start 9p server mount
+	if !viper.GetBool(noMount) || cfg.GetMachineName() != constants.DefaultMachineName {
+		path := os.Args[0]
+		mountCmd := exec.Command(path, "mount", constants.DefaultMountDir+":"+constants.DefaultMountEndpoint)
+		mountCmd.Env = append(os.Environ(), constants.MinikubeMountChildProcess+"=true")
+		err = mountCmd.Start()
+		if err != nil {
+			glog.Errorf("Error running command minikube mount %s", err)
+			cmdUtil.MaybeReportErrorAndExit(err)
+		}
+		err = cmdUtil.StoreProcessToFile(*mountCmd.Process, filepath.Join(constants.GetMinipath(), constants.MountProcessFileName))
+		if err != nil {
+			glog.Errorf("Error storing mount process information: %s", err)
+		}
+	}
 	if kubeCfgSetup.KeepContext {
-		fmt.Printf("The local Kubernetes cluster has started. The kubectl context has not been altered, kubectl will require \"--context=%s\" to use the local Kubernetes cluster.\n", kubeCfgSetup.ClusterName)
+		fmt.Printf("The local Kubernetes cluster has started. The kubectl context has not been altered, kubectl will require \"--context=%s\" to use the local Kubernetes cluster.\n",
+			kubeCfgSetup.ClusterName)
 	} else {
 		fmt.Println("Kubectl is now configured to use the cluster.")
 	}
@@ -211,6 +231,7 @@ func calculateDiskSizeInMB(humanReadableDiskSize string) int {
 
 func init() {
 	startCmd.Flags().Bool(keepContext, constants.DefaultKeepContext, "This will keep the existing kubectl context and will create a minikube context.")
+	startCmd.Flags().Bool(noMount, constants.DefaultNoMount, "This will not start the mount daemon and automatically mount files into minikube")
 	startCmd.Flags().String(isoURL, constants.DefaultIsoUrl, "Location of the minikube iso")
 	startCmd.Flags().String(vmDriver, constants.DefaultVMDriver, fmt.Sprintf("VM driver is one of: %v", constants.SupportedVMDrivers))
 	startCmd.Flags().Int(memory, constants.DefaultMemory, "Amount of RAM allocated to the minikube VM")

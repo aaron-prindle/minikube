@@ -19,7 +19,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/minikube/pkg/minikube/cluster"
 	"k8s.io/minikube/pkg/minikube/machine"
@@ -45,6 +47,12 @@ associated files.`,
 			os.Exit(1)
 		}
 		fmt.Println("Machine deleted.")
+
+		mountProc, err := cmdUtil.ReadProcessFromFile(filepath.Join(constants.GetMinipath(), constants.MountProcessFileName))
+		if err != nil {
+			glog.Errorf("Error reading mount process from file: ", err)
+		}
+		mountProc.Kill()
 	},
 }
 

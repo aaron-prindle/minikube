@@ -20,15 +20,18 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"strings"
 
+	"strconv"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	cmdUtil "k8s.io/minikube/cmd/util"
 	"k8s.io/minikube/pkg/minikube/cluster"
 	"k8s.io/minikube/pkg/minikube/config"
-	"k8s.io/minikube/pkg/minikube/constants"
 	"k8s.io/minikube/pkg/minikube/machine"
 	"k8s.io/minikube/third_party/go9p/ufs"
 )
@@ -45,6 +48,14 @@ var mountCmd = &cobra.Command{
 `
 			fmt.Fprintln(os.Stderr, errText)
 			os.Exit(1)
+		}
+		if args[0] == "kill" {
+			mountProc, err := cmdUtil.ReadProcessFromFile(filepath.Join(constants.GetMinipath(), constants.MountProcessFileName))
+			if err != nil {
+				glog.Errorf("Error reading mount process from file: ", err)
+			}
+			mountProc.Kill()
+			os.Exit(0)
 		}
 		mountString := args[0]
 		idx := strings.LastIndex(mountString, ":")
@@ -94,13 +105,18 @@ var mountCmd = &cobra.Command{
 
 		fmt.Printf("Mounting %s into %s on the minikubeVM\n", hostPath, vmPath)
 		fmt.Println("This daemon process needs to stay alive for the mount to still be accessible...")
+		port, err := cmdUtil.GetPort()
+		if err != nil {
+			glog.Errorln("Error finding port for mount: ", err)
+			os.Exit(1)
+		}
 		var wg sync.WaitGroup
 		wg.Add(1)
 		go func() {
-			ufs.StartServer(net.JoinHostPort(ip.String(), constants.DefaultUfsPort), debugVal, hostPath)
+			ufs.StartServer(net.JoinHostPort(ip.String(), strconv.Itoa(port)), debugVal, hostPath)
 			wg.Done()
 		}()
-		err = cluster.MountHost(api, vmPath)
+		err = cluster.MountHost(api, vmPath, strconv.Itoa(port))
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
