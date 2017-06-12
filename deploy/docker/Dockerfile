@@ -22,11 +22,29 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -y \
     util-linux \
     socat \
     conntrack \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg2 \
+    software-properties-common \
     && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
     && DEBIAN_FRONTEND=noninteractive apt-get autoremove -y \
     && DEBIAN_FRONTEND=noninteractive apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Install docker
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+RUN add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/debian \
+   $(lsb_release -cs) \
+   stable"
+RUN apt-get update
+# TODO(aprindle) add version to docker-ce
+RUN apt-get install -yy -q docker-ce
+
 # Copy over important files
 COPY out/localkube /
-COPY deploy/addons/addon-manager.yaml /etc/kubernetes/manifests/addon-manager.yaml
-COPY deploy/addons /etc/kubernetes/addons
+COPY deploy/docker/start.sh /start.sh
+RUN chmod +x /start.sh
+# COPY deploy/addons/addon-manager.yaml /etc/kubernetes/manifests/addon-manager.yaml
+# COPY deploy/addons /etc/kubernetes/addons
+CMD /start.sh

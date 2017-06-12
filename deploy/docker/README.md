@@ -14,14 +14,13 @@ $ make localkube-image #optional env-vars: TAG=LOCALKUBE_VERSION REGISTRY=gcr.io
 ```console
 $ docker run -d \
     --volume=/:/rootfs:ro \
-    --volume=/sys:/sys:rw \
-    --volume=/var/lib/docker:/var/lib/docker:rw \
-    --volume=/var/lib/kubelet:/var/lib/kubelet:rw \
     --volume=/var/run:/var/run:rw \
+    --volume=/sys:/sys:ro \
+    --volume=/var/lib/docker/:/var/lib/docker:ro \
     --net=host \
-    --pid=host \
+    --pid=host
     --privileged \
-    gcr.io/k8s-minikube/localkube-image:${LOCALKUBE_VERSION:-v1.5.3} \
+    gcr.io/k8s-minikube/localkube-image:${LOCALKUBE_VERSION:-v1.6.4} \
     /localkube start \
     --apiserver-insecure-address=0.0.0.0 \
     --apiserver-insecure-port=8080 \
