@@ -7,7 +7,7 @@ From root minikube/ directory run:
 ```console
 $ make localkube-image #optional env-vars: TAG=LOCALKUBE_VERSION REGISTRY=gcr.io/k8s-minikube
 ```
-
+[]
 #### How to run
 
 ##### Linux
@@ -21,12 +21,7 @@ $ docker run -d \
     --net=host \
     --pid=host \
     --privileged \
-    gcr.io/k8s-minikube/localkube-image:${LOCALKUBE_VERSION:-v1.5.3} \
-    /localkube start \
-    --apiserver-insecure-address=0.0.0.0 \
-    --apiserver-insecure-port=8080 \
-    --logtostderr=true \
-    --containerized
+    gcr.io/aprindle-vm/localkube-image:${LOCALKUBE_VERSION:-v1.6.4}
 ```
 
 ##### Docker for Mac/Windows

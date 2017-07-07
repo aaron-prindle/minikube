@@ -12,21 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:jessie
+FROM docker:stable-dind
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update -y \
-    && DEBIAN_FRONTEND=noninteractive apt-get -yy -q install \
+RUN apk add --update \
     iptables \
     ethtool \
     ca-certificates \
     util-linux \
     socat \
-    conntrack \
-    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
-    && DEBIAN_FRONTEND=noninteractive apt-get autoremove -y \
-    && DEBIAN_FRONTEND=noninteractive apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    conntrack-tools \
+    && rm -rf /var/cache/apk/*
 
 # Copy over important files
 COPY out/localkube /
 COPY deploy/addons/addon-manager.yaml /etc/kubernetes/manifests/addon-manager.yaml
 COPY deploy/addons /etc/kubernetes/addons
+CMD  /localkube start \
+    --apiserver-insecure-address=127.0.0.1 \
+    --apiserver-insecure-port=8080 \
+    --logtostderr=true
