@@ -39,7 +39,7 @@ func NewLocalkubeServer() *localkube.LocalkubeServer {
 		APIServerAddress:         net.ParseIP("0.0.0.0"),
 		APIServerPort:            util.APIServerPort,
 		APIServerInsecureAddress: net.ParseIP("127.0.0.1"),
-		APIServerInsecurePort:    8080,
+		APIServerInsecurePort:    util.APIServerInsecurePort,
 		APIServerName:            constants.APIServerName,
 		ShouldGenerateCerts:      true,
 		ShowVersion:              false,

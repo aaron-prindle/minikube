@@ -41,8 +41,7 @@ func StartAPIServer(lk LocalkubeServer) func() error {
 	config.SecureServing.BindAddress = lk.APIServerAddress
 	config.SecureServing.BindPort = lk.APIServerPort
 
-	// 0 turns off insecure serving.
-	config.InsecureServing.BindPort = 0
+	config.InsecureServing.BindPort = lk.APIServerInsecurePort
 
 	config.Authentication.ClientCert.ClientCA = lk.GetCAPublicKeyCertPath()
 
