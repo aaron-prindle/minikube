@@ -170,7 +170,7 @@ func setRemoteAuthOptions(p provision.Provisioner) auth.Options {
 	dockerDir := p.GetDockerOptionsDir()
 	authOptions := p.GetAuthOptions()
 
-	// due to windows clients, we cannot use filepath.Join as the paths
+	// due to windows clients, we cannot use path.join as the paths
 	// will be mucked on the linux hosts
 	authOptions.CaCertRemotePath = path.Join(dockerDir, "ca.pem")
 	authOptions.ServerCertRemotePath = path.Join(dockerDir, "server.pem")
@@ -193,13 +193,13 @@ func configureAuth(p *BuildrootProvisioner) error {
 
 	execRunner := &bootstrapper.ExecRunner{}
 	hostCerts := map[string]string{
-		authOptions.CaCertPath:     filepath.Join(authOptions.StorePath, "ca.pem"),
-		authOptions.ClientCertPath: filepath.Join(authOptions.StorePath, "cert.pem"),
-		authOptions.ClientKeyPath:  filepath.Join(authOptions.StorePath, "key.pem"),
+		authOptions.CaCertPath:     path.join(authOptions.StorePath, "ca.pem"),
+		authOptions.ClientCertPath: path.join(authOptions.StorePath, "cert.pem"),
+		authOptions.ClientKeyPath:  path.join(authOptions.StorePath, "key.pem"),
 	}
 
 	for src, dst := range hostCerts {
-		f, err := assets.NewFileAsset(src, filepath.Dir(dst), filepath.Base(dst), "0777")
+		f, err := assets.NewFileAsset(src, path.Dir(dst), filepath.Base(dst), "0777")
 		if err != nil {
 			return errors.Wrapf(err, "open cert file: %s", src)
 		}
