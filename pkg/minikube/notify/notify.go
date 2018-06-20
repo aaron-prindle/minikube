@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -32,7 +33,6 @@ import (
 	"k8s.io/minikube/pkg/minikube/config"
 	"k8s.io/minikube/pkg/minikube/constants"
 	"k8s.io/minikube/pkg/version"
-)
 
 const updateLinkPrefix = "https://github.com/kubernetes/minikube/releases/tag/v"
 
@@ -87,11 +87,27 @@ type Release struct {
 type Releases []Release
 
 func getJson(url string, target *Releases) error {
-	r, err := http.Get(url)
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return errors.Wrap(err, "Error getting minikube version url via http")
+		return errors.Wrap(err, "error creating new http request")
 	}
-	defer r.Body.Close()
+	ua := fmt.Sprintf("Minikube/%s Minikube-OS/%s",
+		version.GetVersion(), runtime.GOOS)
+
+	req.Header.Set("User-Agent", ua)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return errors.Wrapf(err, "error with http GET for endpoint %s", url)
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	return json.NewDecoder(r.Body).Decode(target)
 }
